@@ -35,4 +35,12 @@ class Wall {
         this.length = random(1) * width * 0.5;
         this.init();
     }
+
+    increase_velocity(factor) {
+        this.velocity += factor;
+    }
+
+    change_gap(factor) {
+        this.gap += factor;
+    }
 }

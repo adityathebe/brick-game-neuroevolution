@@ -61,10 +61,6 @@ class Player {
         }
     }
 
-    gainScore() {
-        this.score += 0.1;
-    }
-
     clone() {
         let temp_clone = this;
         temp_clone.score = 0;

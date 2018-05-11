@@ -3,8 +3,8 @@ class Generation {
         this.population = population;
         this.species = [];
         this.saved_species = [];
-        this.current_population = population;
         this.generation = 1;
+        this.high_score = 0;
     }
 
     clear() {
@@ -16,13 +16,11 @@ class Generation {
             let y = Math.random() * width
             this.species.push(new Player(y, height - 20, 40));
         }
-        this.current_population = this.population;
     }
 
     kill_creature(index) {
         let killed_creature = this.species.splice(index, 1)[0];
         this.saved_species.push(killed_creature);
-        this.current_population -= 1;
     }
 
     calculate_fitness() {
@@ -53,13 +51,14 @@ class Generation {
     }
 
     evolve() {
+        let gen_highscore = Math.max.apply(Math, this.saved_species.map(o => o.score));
+        this.high_score = gen_highscore > this.high_score ? gen_highscore : this.high_score;
         this.generation += 1;
         this.calculate_fitness();
         for (let i = 0; i < this.population; i++) {
             let selected_creature = this.poolSelection();
             this.species[i] = selected_creature;
         }
-        this.current_population = this.population;
         this.saved_species = [];
     }
 }
