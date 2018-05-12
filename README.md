@@ -6,7 +6,9 @@ This is a mini game I am currently working on to learn Genetic Algorithm.
 
 ### Objective 
 
-To avoid the falling walls
+To avoid the falling walls. 
+
+As the score builds up, the velocity of the falling wall increases and the gap between the two walls decreases.
 
 ### Neural Network Structure
 

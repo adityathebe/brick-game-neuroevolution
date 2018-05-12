@@ -4,6 +4,9 @@ let slider;
 let wall = null;
 let players_alive;
 
+const POPULATION = 20;
+const WALL_GAP = 100;
+
 function setup() {
     createCanvas(380, 580);
     textSize(20);
@@ -12,11 +15,11 @@ function setup() {
     slider = createSlider(1, 10, 1);
 
     // Create a population
-    generation = new Generation(20);
+    generation = new Generation(POPULATION);
     generation.initialize();
 
     // Create wall
-    wall = new Wall(0, 100);
+    wall = new Wall(0, WALL_GAP);
     wall.init();
 }
 
@@ -47,13 +50,15 @@ function draw() {
         if (players_alive.length === 0) {
             wall.reset();
             wall.velocity = 4;
+            wall.gap = WALL_GAP;
             generation.evolve();
             return;
         }
 
-        // Increase speed of wall with score
+        // Increase speed and decrease the gaap of wall
         if (players_alive[0].score != 0 && players_alive[0].score % 1000 === 0) {
             wall.increase_velocity(1);
+            wall.gap -= 1;
         }
     }
     
