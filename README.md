@@ -1,6 +1,6 @@
 # Evolution Simulation
 
-This is a mini game I created to learn Genetic Algorithm.
+This is a mini game I am currently working on to learn Genetic Algorithm.
 
 ### Objective 
 

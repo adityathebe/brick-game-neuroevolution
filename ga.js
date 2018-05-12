@@ -2,74 +2,57 @@ class Generation {
     constructor(population) {
         this.population = population;
         this.species = [];
-        this.saved_species = [];
         this.generation = 1;
         this.high_score = 0;
-    }
-
-    clear() {
-        this.species = [];
+        this.total_score = 0;
     }
 
     initialize() {
         for (let i = 0; i < this.population; i++) {
-            let y = Math.random() * width
-            this.species.push(new Player(y, height - 20, 40));
+            let y = Math.random() * width;
+            this.species.push(new Player({ id: i, x: y, y: height - 20, d: 40 }));
+            this.species[i].id = i;
         }
     }
 
-    kill_creature(index) {
-        let killed_creature = this.species.splice(index, 1)[0];
-        this.saved_species.push(killed_creature);
-    }
-
-    calculate_fitness() {
-        let total_score = 0;
-        this.saved_species.forEach((creature) => {
-            total_score += creature.score;
-        });
-
-        // Assign fitness to each creature
-        for (let i = 0; i < this.population; i++) {
-            this.saved_species[i].fitness = this.saved_species[i].score / total_score;
-        }
-    }
-
-    poolSelection() {
+    pick_one(range) {
         let index = 0;
-        let r = random(1);
+        let r = random(range);
         while (r > 0) {
-            let f = this.saved_species[index].fitness;
-            r -= f;
+            r -= this.species[index].score;
             index += 1;
         }
 
         index -= 1;
-        let child = this.saved_species[index].clone();
-        child.mutate(mutate_fn);
-        return child;
+        return this.species[index].clone();
     }
 
     evolve() {
-        let gen_highscore = Math.max.apply(Math, this.saved_species.map(o => o.score));
-        this.high_score = gen_highscore > this.high_score ? gen_highscore : this.high_score;
         this.generation += 1;
-        this.calculate_fitness();
+        let gen_highscore = Math.max.apply(Math, this.species.map(o => o.score));
+        this.high_score = gen_highscore > this.high_score ? gen_highscore : this.high_score;
+
+        // Calculate Total Score of this Generation
+        let total_score = 0;
+        this.species.forEach((creature) => {
+            total_score += creature.score;
+        });
+
+        // Store New Childs Temporarily in this array
+        let new_generation = [];
+
         for (let i = 0; i < this.population; i++) {
-            let selected_creature = this.poolSelection();
-            this.species[i] = selected_creature;
+            let parentA = this.pick_one(total_score);
+            let parentB = this.pick_one(total_score);
+            parentA.mutate();
+            parentB.mutate();
+            // console.log(i + 1, "Parents", parentA.id, parentB.id)
+
+            let child = parentA.crossover(parentB);
+            child.mutate();
+            child.id = i;
+            new_generation.push(child);
         }
-        this.saved_species = [];
-    }
-}
-
-
-function mutate_fn(x) {
-    if (random(1) < 0.1) {
-        let offset = randomGaussian() * 0.5;
-        let newx = x + offset;
-        return newx;
-    } else {
-        return x;
+        this.species = new_generation
     }
 }

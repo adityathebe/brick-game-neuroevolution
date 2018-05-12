@@ -1,19 +1,23 @@
 class Player {
-    constructor(x, y, d = 20) {
-        this.x = x;
-        this.y = y;
-        this.diameter = d;
-        this.radius = d / 2;
+    constructor(params) {
+        this.x = params.x;
+        this.y = params.y;
+        this.diameter = params.d;
+        this.radius = params.d / 2;
         this.score = 0;
-        this.fitness = 0;
+        this.alive = true;
+        this.color = 255;
+        this.shift = params.d / 4 || 5;
 
-        this.shift = d / 4 || 5;
-        this.velocity = 1;
-        this.gravity = 0.6;
-        this.color = 255
+        if (params.brain instanceof NeuralNetwork) {
+            this.brain = params.brain;
+        } else {
+            this.brain = new NeuralNetwork(3, 5, 1)
+        }
+    }
 
-        // Neural Network
-        this.brain = new NeuralNetwork(3, 5, 1)
+    kill() {
+        this.alive = false;
     }
 
     show() {
@@ -26,7 +30,7 @@ class Player {
         let d1 = this.x - wall.r1.length;
         let d2 = wall.r2.x - this.x;
         let y_param = this.y - wall.y;
-        if ( y_param < (this.radius + wall.width ) ) {
+        if (y_param <= (this.radius + wall.width)) {
             if (d1 < this.radius || d2 < this.radius) {
                 return true;
             }
@@ -48,8 +52,8 @@ class Player {
 
     think(wall) {
         let inputs = [wall.y / height];
-        inputs.push( (this.x - wall.length) / width);
-        inputs.push( (wall.r2.x - this.x) / width );
+        inputs.push((this.x - wall.length) / width);
+        inputs.push((wall.r2.x - this.x) / width);
 
         let response = this.brain.predict(inputs)[0];
         if (response < 0.33) {
@@ -62,18 +66,41 @@ class Player {
     }
 
     clone() {
-        let temp_clone = this;
-        temp_clone.score = 0;
+        let temp_clone = new Player({ x: this.x, y: this.y, d: this.diameter, brain: this.brain.clone() });   // Make a duplicate of this object
         return temp_clone;
     }
 
-    mutate(fn) {
+    mutate() {
+        function fn(x) {
+            if (random(1) < 0.01) {
+                let offset = randomGaussian() * 0.5;
+                let newx = x + offset;
+                return newx;
+            }
+            return x;
+        }
+
         let ih = this.brain.input_weights.dataSync().map(fn);
         let ih_shape = this.brain.input_weights.shape;
         this.brain.input_weights = tf.tensor(ih, ih_shape);
-        
+
         let ho = this.brain.output_weights.dataSync().map(fn);
         let ho_shape = this.brain.output_weights.shape;
         this.brain.output_weights = tf.tensor(ho, ho_shape);
+    }
+
+    crossover(partner) {
+        let parentA_dna = this.brain.input_weights.dataSync();
+        let parentB_dna = partner.brain.input_weights.dataSync();
+        let parents = [parentA_dna, parentB_dna];
+
+        let child_dna = [];
+        for (let i = 0; i < parentA_dna.length; i++) {
+            let select = Math.floor(Math.random() * 2);
+            child_dna.push(parents[select][i]);
+        }
+        let child = this.clone();
+        child.brain.input_weights = tf.tensor(child_dna, this.brain.input_weights.shape);
+        return child
     }
 }
