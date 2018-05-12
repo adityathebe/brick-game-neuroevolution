@@ -2,6 +2,8 @@
 
 This is a mini game I am currently working on to learn Genetic Algorithm.
 
+**[DEMO](https://adityathebe.github.io/brick-game-neuroevolution/)**
+
 ### Objective 
 
 To avoid the falling walls
